@@ -5,3 +5,7 @@ Verna Assign
     3. In this docker-compose.yml, 
         - postgresql db is created via postgres image
         - django server is built using docker file
+        
+Docker Image sizes are as - 
+826kB - web
+63B - db
