@@ -14,7 +14,7 @@ SlotValidationResult = Tuple[bool, bool, str, Dict]
 
 def validate_finite_values_entity(values: List[Dict], supported_values: List[str] = None,
                                   invalid_trigger: str = None, key: str = None,
-                                  support_multiple: bool = True, pick_first: bool = False,
+                                  support_multiple: bool = True, pick_first: bool = False, type_name: str = "",
                                   **kwargs) -> SlotValidationResult:
     ids_stated = []
     trigger = invalid_trigger
@@ -41,31 +41,69 @@ def validate_finite_values_entity(values: List[Dict], supported_values: List[str
         filled = True
         trigger = ""
         partially_filled = False
-    if pick_first is True:
-        ids_stated = str(ids_stated['0'])
+    if pick_first is True and len(ids_stated) > 0:
+        age_stated = ids_stated[0]
+        parameters[key] = age_stated
     elif support_multiple is True:
-        ids_stated = ids_stated
+        age_stated = ids_stated
+        parameters[key] = age_stated
 
-    SlotValidationResult = {
+    result = {
         'filled': filled,
         'partially_filled': partially_filled,
         'trigger': trigger,
         'parameters': parameters
     }
-    return SlotValidationResult
-    # """
-    # Validate an entity on the basis of its value extracted.
-    # The method will check if the values extracted("values" arg) lies within the finite list of supported values(arg "supported_values").
-    #
-    # :param pick_first: Set to true if the first value is to be picked up
-    # :param support_multiple: Set to true if multiple utterances of an entity are supported
-    # :param values: Values extracted by NLU
-    # :param supported_values: List of supported values for the slot
-    # :param invalid_trigger: Trigger to use if the extracted value is not supported
-    # :param key: Dict key to use in the params returned
-    # :return: a tuple of (filled, partially_filled, trigger, params)
-    # """
-    # ...
+    return result
+
+
+def validate_numeric_entity(values: List[Dict], invalid_trigger: str = None, key: str = None,
+                            support_multiple: bool = True, pick_first: bool = False, constraint=None, var_name=None,
+                            **kwargs) -> SlotValidationResult:
+    age_stated = []
+    trigger = invalid_trigger
+    partially_filled = False
+    total_values = len(values)
+    values_checked = 0
+    filled = False
+    parameters = {}
+
+    for value in values:
+        if not isinstance(value['value'], int):
+            parameters = {}
+            break
+        if 'entity_type' in value and 'value' in value:
+            partially_filled = True
+            vars()[var_name] = value['value']
+            if eval(constraint):
+                trigger = ""
+                partially_filled = True
+                values_checked += 1
+                age_stated.append(value['value'])
+            else:
+                trigger = invalid_trigger
+
+    if values_checked == total_values and total_values != 0:
+        filled = True
+        trigger = ""
+        partially_filled = False
+    if pick_first is True and len(age_stated) > 0:
+        age_stated = age_stated[0]
+        parameters[key] = age_stated
+    elif support_multiple is True:
+        age_stated = age_stated
+        parameters[key] = age_stated
+
+    if total_values == 0:
+        parameters = {}
+
+    result = {
+        'filled': filled,
+        'partially_filled': partially_filled,
+        'trigger': trigger,
+        'parameters': parameters
+    }
+    return result
 
 
 class ValuesSet(viewsets.ModelViewSet):
@@ -91,29 +129,29 @@ class ValuesSet(viewsets.ModelViewSet):
             if serializer.is_valid():
 
                 self.perform_create(serializer)
-                # if 'values' in data and 'supported_values' in data and :
-                if all(k in data for k in ("values", "supported_values", "invalid_trigger", "key", "support_multiple",
-                                           "pick_first")):
-                    SlotValidationResult = validate_finite_values_entity(data['values'], data['supported_values'], data['invalid_trigger'],
-                                                  data['key'], data['support_multiple'], data['pick_first'])
-                    return Response(SlotValidationResult)
-                else:
-                    result['message'] = "values, supported_values, invalid_trigger, key, support_multiple, " \
-                                        "pick_first are required"
-                    result['status_code'] = 400
-                    return Response(result)
-                result['status_code'] = 200
-                result['message'] = "User created"
-                print("seri", serializer.data['value_id'])
-                result["data"] = {"value_id": serializer.data['value_id']}
-                return Response(result)
-            else:
-                error = serializer.errors
-                result['message'] = error
-                return Response(result)
-            result['message'] = "User created"
-            result['data'] = data
-            return Response(result)
+                if 'validation_parser' in data:
+                    if data['validation_parser'] == 'finite_values_entity':
+                        if all(k in data for k in ("values", "supported_values", "invalid_trigger", "key",
+                                                   "support_multiple", "pick_first")):
+                            result = validate_finite_values_entity(data['values'], data['supported_values'],
+                                                                   data['invalid_trigger'], data['key'],
+                                                                   data['support_multiple'],
+                                                                   data['pick_first'], data['type'])
+                            return Response(result)
+                    elif data['validation_parser'] == 'numeric_values_entity':
+                        support_multiple = data.get('support_multiple') or False
+                        pick_first = data.get('pick_first') or False
+
+                        result = validate_numeric_entity(data['values'], data['invalid_trigger'], data['key'],
+                                                         support_multiple, pick_first,
+                                                         data['constraint'], data['var_name'])
+                        return Response(result)
+                    else:
+                        result['message'] = "I - (values, supported_values, invalid_trigger, key, support_multiple, " \
+                                            "pick_first) or II-(values, invalid_trigger, key, " \
+                                            "support_multiple, pick_first, constraint, var_name) is required"
+                        result['status_code'] = 400
+                        return Response(result)
         except ValueError as e:
             result = {
                 "status_code": 400,

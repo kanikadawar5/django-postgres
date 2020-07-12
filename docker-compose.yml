@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  web:
+    restart: always
+    build: ./
+    ports:
+      - "8000:8000"
+    links:
+      - postgres:postgres
+    volumes:
+      - web-django:/usr/src/app
+      - web-static:/usr/src/app/static
+    environment:
+      DEBUG: 'true'
+    command: python manage.py runserver 0.0.0.0:8000
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "verna_kan_assign"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+
+volumes:
+  web-django:
+  web-static:
+  pgdata:

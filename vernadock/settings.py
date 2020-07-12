@@ -25,7 +25,7 @@ SECRET_KEY = 'qvr*1ap69r(%rx^q8g5qb-lfj!n_y-rwptr+20!$0dv0xp*ilc'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -75,23 +75,26 @@ WSGI_APPLICATION = 'vernadock.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'verna_kan_assign',
-        'PASSWORD': 'root@123',
-        'HOST': 'localhost',
-        'USER': 'root',
-        'PORT': ''
+        'PASSWORD': 'postgres',
+        'HOST': 'postgres',
+        'USER': 'postgres',
+        'PORT': '5432'
     }
 }
-
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'verna_kan_assign',
+#         'PASSWORD': 'root@123',
+#         'HOST': 'localhost',
+#         'USER': 'root',
+#         # 'PORT': '5432'
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 

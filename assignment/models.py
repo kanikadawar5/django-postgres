@@ -27,13 +27,8 @@ class Values(models.Model):
                       blank=True, null=True)
     validation_parser = models.CharField(verbose_name="validation_parser", max_length=150, blank=True, null=True)
     values = ArrayField(JSONField(default=my_default), verbose_name="values", blank=True, null=True)
-    # board = ArrayField(
-    #     ArrayField(
-    #         models.CharField(max_length=10, blank=True),
-    #         size=8,
-    #     ),
-    #     size=8,
-    # )
+    constraint = models.CharField(verbose_name="Constraint", max_length=200, blank=True, null=True)
+    var_name = models.CharField(verbose_name="var_name", max_length=100, blank=True, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -70,5 +65,26 @@ class Values(models.Model):
 #   ]
 # }
 
+# {
+#   "invalid_trigger": "invalid_age",
+#   "key": "age_stated",
+#   "name": "age",
+#   "reuse": true,
+#   "pick_first": true,
+#   "type": [
+#     "number"
+#   ],
+#   "validation_parser": "numeric_values_entity",
+#   "constraint": "x>=18 and x<=30",
+#   "var_name": "x",
+#   "values": [
+#     {
+#       "entity_type": "number",
+#       "value": 23
+#     }
+#   ]
+# }
 
 # python manage.py sqlmigrate assignment 0001_initial
+# values: List[Dict], invalid_trigger: str = None, key: str = None,
+# support_multiple: bool = True, pick_first: bool = False, constraint=None, var_name=None
