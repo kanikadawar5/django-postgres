@@ -4,7 +4,7 @@ chardet==3.0.4
 Django==3.0.8
 django-mysql==3.7.1
 django-utils==0.0.2
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 djangotoolbox==1.8.0
 idna==2.10
 mysqlclient==2.0.1
